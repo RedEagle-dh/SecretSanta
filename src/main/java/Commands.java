@@ -1,4 +1,6 @@
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -35,6 +37,7 @@ public class Commands extends ListenerAdapter {
             case "deldm" -> delDM(event, Objects.requireNonNull(event.getOption("amount")));
             case "clear" -> clear(event, Objects.requireNonNull(event.getOption("amount")));
             case "help" -> help(event);
+            case "verschickedm" -> verschickeDM(event, Objects.requireNonNull(event.getMember()).getJDA());
         }
 
     }
@@ -120,8 +123,33 @@ public class Commands extends ListenerAdapter {
         event.reply("Auslosung wurde gestartet. Bitte /gibmate ausführen! <a:happycat:888325204286271489>").submit();
     }
 
+
+    // Only one has to call the command and every user gonna get the dm.
+    public void verschickeDM(SlashCommandEvent event, JDA jda) {
+        // Dave
+        Objects.requireNonNull(jda.getUserById(324890484944404480L)).openPrivateChannel().queue((channel) -> {
+            channel.sendMessage("Schön dass du bei Wichteln mitmachst! Du hast hiermit " + spieler.get("Dave") + " gezogen. Viel Spaß :P").queue();
+        });
+        // Josh
+        Objects.requireNonNull(jda.getUserById(615955812065738763L)).openPrivateChannel().queue((channel) -> {
+            channel.sendMessage("Schön dass du bei Wichteln mitmachst! Du hast hiermit " + spieler.get("Josh") + " gezogen. Viel Spaß :P").queue();
+        });
+        // Kai
+        Objects.requireNonNull(jda.getUserById(379018675795263503L)).openPrivateChannel().queue((channel) -> {
+            channel.sendMessage("Schön dass du bei Wichteln mitmachst! Du hast hiermit " + spieler.get("Kai") + " gezogen. Viel Spaß :P").queue();
+        });
+        // FB
+        Objects.requireNonNull(jda.getUserById(380828065871429634L)).openPrivateChannel().queue((channel) -> {
+            channel.sendMessage("Schön dass du bei Wichteln mitmachst! Du hast hiermit " + spieler.get("FB") + " gezogen. Viel Spaß :P").queue();
+        });
+        // TODO More participants
+
+        event.reply("Die DM mit allen ausgelosten Teilnehmern wurde verschickt. Lasset die Spiele beginnen <:DaveHeart:911979369579315301>").queue();
+    }
+
     // Hard coded part of the bot, it is tailored to the participants this year.
     // /gibmate command
+    // Every user have to call the command personally and get the message then.
     public void beginneWichteln(SlashCommandEvent event) {
         log.info("/gibmate created from " + event.getUser().getAsMention());
         if (event.getUser().getName().equals("RedEagle")) {
