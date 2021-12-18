@@ -37,7 +37,7 @@ public class Commands extends ListenerAdapter {
             case "deldm" -> delDM(event, Objects.requireNonNull(event.getOption("amount")));
             case "clear" -> clear(event, Objects.requireNonNull(event.getOption("amount")));
             case "help" -> help(event);
-            case "verschickedm" -> verschickeDM(event, Objects.requireNonNull(event.getMember()).getJDA());
+            case "verschickedm" -> verschickeDM(event);
         }
 
     }
@@ -125,22 +125,24 @@ public class Commands extends ListenerAdapter {
 
 
     // Only one has to call the command and every user gonna get the dm.
-    public void verschickeDM(SlashCommandEvent event, JDA jda) {
+    public void verschickeDM(SlashCommandEvent event) {
+
+        //System.out.println(event.getGuild().retrieveMemberById(324890484944404480L).getJDA().openPrivateChannelById(324890484944404480L).complete());
         // Dave
-        Objects.requireNonNull(jda.getUserById(324890484944404480L)).openPrivateChannel().queue((channel) -> {
+        event.getGuild().retrieveMemberById(324890484944404480L).getJDA().openPrivateChannelById(324890484944404480L).queue(channel -> {
             channel.sendMessage("Schön dass du bei Wichteln mitmachst! Du hast hiermit " + spieler.get("Dave") + " gezogen. Viel Spaß :P").queue();
         });
+        // FB
+        event.getGuild().retrieveMemberById(380828065871429634L).getJDA().openPrivateChannelById(380828065871429634L).queue(channel -> {
+            channel.sendMessage("Schön dass du bei Wichteln mitmachst! Du hast hiermit " + spieler.get("FB") + " gezogen. Viel Spaß :P").queue();
+        });
         // Josh
-        Objects.requireNonNull(jda.getUserById(615955812065738763L)).openPrivateChannel().queue((channel) -> {
+        event.getGuild().retrieveMemberById(615955812065738763L).getJDA().openPrivateChannelById(615955812065738763L).queue(channel -> {
             channel.sendMessage("Schön dass du bei Wichteln mitmachst! Du hast hiermit " + spieler.get("Josh") + " gezogen. Viel Spaß :P").queue();
         });
         // Kai
-        Objects.requireNonNull(jda.getUserById(379018675795263503L)).openPrivateChannel().queue((channel) -> {
+        event.getGuild().retrieveMemberById(379018675795263503L).getJDA().openPrivateChannelById(379018675795263503L).queue(channel -> {
             channel.sendMessage("Schön dass du bei Wichteln mitmachst! Du hast hiermit " + spieler.get("Kai") + " gezogen. Viel Spaß :P").queue();
-        });
-        // FB
-        Objects.requireNonNull(jda.getUserById(380828065871429634L)).openPrivateChannel().queue((channel) -> {
-            channel.sendMessage("Schön dass du bei Wichteln mitmachst! Du hast hiermit " + spieler.get("FB") + " gezogen. Viel Spaß :P").queue();
         });
         // TODO More participants
 
