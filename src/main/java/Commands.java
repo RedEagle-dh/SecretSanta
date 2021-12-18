@@ -56,17 +56,23 @@ public class Commands extends ListenerAdapter {
 
     // /clear command
     public void clear(SlashCommandEvent event, OptionMapping amount) {
-        log.info("/clear created from " + event.getUser().getAsMention());
+        if (event.getMember().hasPermission(Permission.MESSAGE_MANAGE)) {
+            log.info("/clear created from " + event.getUser().getAsMention());
 
-        // Get the textchannel we are in rn
-        TextChannel channel = event.getTextChannel();
-        // List of msgs with a specific amount
-        List<Message> msgs = channel.getHistory().retrievePast(Integer.parseInt(amount.getAsString())).complete();
-        // purging list
-        channel.purgeMessages(msgs);
+            // Get the textchannel we are in rn
+            TextChannel channel = event.getTextChannel();
+            // List of msgs with a specific amount
+            List<Message> msgs = channel.getHistory().retrievePast(Integer.parseInt(amount.getAsString())).complete();
+            // purging list
+            channel.purgeMessages(msgs);
 
-        event.replyFormat("Nachrichten gelöscht.").setEphemeral(true).queue();
-        log.info("Bot replied \"Nachrichten gelöscht\" to " + event.getUser().getAsMention());
+            event.replyFormat("Nachrichten gelöscht.").setEphemeral(true).queue();
+            log.info("Bot replied \"Nachrichten gelöscht\" to " + event.getUser().getAsMention());
+        } else {
+            event.replyFormat("Das kannst du nicht tun.").setEphemeral(true).queue();
+            log.error(event.getUser().getAsMention() + " tried to use /clear with no permissions from tpye " + Permission.MESSAGE_MANAGE);
+        }
+
     }
 
     // /deldm command
@@ -87,66 +93,84 @@ public class Commands extends ListenerAdapter {
 
     // /loseaus command
     public void lose(SlashCommandEvent event) {
-        // The players are assigned their partners.
-        // "lose" is a german word and stands for "drawing"
-        log.info("/loseaus created from " + event.getUser().getAsMention());
-        zahlen.clear();
-        spielerzahl.put(0, "Josh");
-        spielerzahl.put(1, "Jan");
-        spielerzahl.put(2, "Jannik");
-        spielerzahl.put(3, "FB");
-        spielerzahl.put(4, "Kai");
-        spielerzahl.put(5, "Dave");
-        spielerzahl.put(6, "Freddy");
+        if (event.getUser().getName().equals("RedEagle") && event.getMember().hasPermission(Permission.ADMINISTRATOR)) {
+            // The players are assigned their partners.
+            // "lose" is a german word and stands for "drawing"
+            log.info("/loseaus created from " + event.getUser().getAsMention());
+            zahlen.clear();
+            spielerzahl.put(0, "Josh");
+            spielerzahl.put(1, "Jan");
+            spielerzahl.put(2, "Jannik");
+            spielerzahl.put(3, "FB");
+            spielerzahl.put(4, "Kai");
+            spielerzahl.put(5, "Dave");
+            spielerzahl.put(6, "Freddy");
 
-        for (int i = 0; i < mitspieler.length; i++) {
-            int rand = r.nextInt(7); // 7
-            if (zahlen == null) {
-                while (rand == i) {
-                    rand = r.nextInt(7); // 7
+            for (int i = 0; i < mitspieler.length; i++) {
+                int rand = r.nextInt(7); // 7
+                if (zahlen == null) {
+                    while (rand == i) {
+                        rand = r.nextInt(7); // 7
+                    }
+                    zahlen.add(rand);
+                    spieler.put(mitspieler[i], spielerzahl.get(rand));
+                } else {
+                    while (zahlen.contains(rand) || rand == i) {
+                        rand = r.nextInt(7); // 7
+                    }
+                    zahlen.add(rand);
+                    spieler.put(mitspieler[i], spielerzahl.get(rand));
+                    if (zahlen.size() == 7) {
+                        break;
+                    }
                 }
-                zahlen.add(rand);
-                spieler.put(mitspieler[i], spielerzahl.get(rand));
-            } else {
-                while (zahlen.contains(rand) || rand == i) {
-                    rand = r.nextInt(7); // 7
-                }
-                zahlen.add(rand);
-                spieler.put(mitspieler[i], spielerzahl.get(rand));
-                if (zahlen.size() == 7) {
-                    break;
-                }
+
             }
-
+            log.info("Bot replied \"Auslosung wurde gestartet. Bitte /gibmate ausführen!\" to " + event.getUser().getAsMention());
+            event.reply("Auslosung wurde gestartet. Bitte /gibmate ausführen! <a:happycat:888325204286271489>").queue();
+        } else {
+            log.error(event.getUser().getAsMention() + " tried to use /loseaus with no permissions of type " + Permission.ADMINISTRATOR);
+            event.reply("Das kannst du nicht tun.").setEphemeral(true).queue();
         }
-        log.info("Bot replied \"Auslosung wurde gestartet. Bitte /gibmate ausführen!\" to " + event.getUser().getAsMention());
-        event.reply("Auslosung wurde gestartet. Bitte /gibmate ausführen! <a:happycat:888325204286271489>").submit();
+
     }
 
 
     // Only one has to call the command and every user gonna get the dm.
     public void verschickeDM(SlashCommandEvent event) {
+        boolean hatRole = false;
+        for (int i = 0; i < event.getMember().getRoles().size(); i++) {
+            if (event.getMember().getRoles().get(i).getName().equals("Wichteln")) {
+                hatRole = true;
+            }
+        }
+        if (hatRole) {
+            //System.out.println(event.getGuild().retrieveMemberById(324890484944404480L).getJDA().openPrivateChannelById(324890484944404480L).complete());
+            // Dave
+            event.getGuild().retrieveMemberById(324890484944404480L).getJDA().openPrivateChannelById(324890484944404480L).queue(channel -> {
+                channel.sendMessage("Schön dass du bei Wichteln mitmachst! Du hast hiermit " + spieler.get("Dave") + " gezogen. Viel Spaß :P").queue();
+            });
+            // FB
+            event.getGuild().retrieveMemberById(380828065871429634L).getJDA().openPrivateChannelById(380828065871429634L).queue(channel -> {
+                channel.sendMessage("Schön dass du bei Wichteln mitmachst! Du hast hiermit " + spieler.get("FB") + " gezogen. Viel Spaß :P").queue();
+            });
+            // Josh
+            event.getGuild().retrieveMemberById(615955812065738763L).getJDA().openPrivateChannelById(615955812065738763L).queue(channel -> {
+                channel.sendMessage("Schön dass du bei Wichteln mitmachst! Du hast hiermit " + spieler.get("Josh") + " gezogen. Viel Spaß :P").queue();
+            });
+            // Kai
+            event.getGuild().retrieveMemberById(379018675795263503L).getJDA().openPrivateChannelById(379018675795263503L).queue(channel -> {
+                channel.sendMessage("Schön dass du bei Wichteln mitmachst! Du hast hiermit " + spieler.get("Kai") + " gezogen. Viel Spaß :P").queue();
+            });
+            // TODO More participants
 
-        //System.out.println(event.getGuild().retrieveMemberById(324890484944404480L).getJDA().openPrivateChannelById(324890484944404480L).complete());
-        // Dave
-        event.getGuild().retrieveMemberById(324890484944404480L).getJDA().openPrivateChannelById(324890484944404480L).queue(channel -> {
-            channel.sendMessage("Schön dass du bei Wichteln mitmachst! Du hast hiermit " + spieler.get("Dave") + " gezogen. Viel Spaß :P").queue();
-        });
-        // FB
-        event.getGuild().retrieveMemberById(380828065871429634L).getJDA().openPrivateChannelById(380828065871429634L).queue(channel -> {
-            channel.sendMessage("Schön dass du bei Wichteln mitmachst! Du hast hiermit " + spieler.get("FB") + " gezogen. Viel Spaß :P").queue();
-        });
-        // Josh
-        event.getGuild().retrieveMemberById(615955812065738763L).getJDA().openPrivateChannelById(615955812065738763L).queue(channel -> {
-            channel.sendMessage("Schön dass du bei Wichteln mitmachst! Du hast hiermit " + spieler.get("Josh") + " gezogen. Viel Spaß :P").queue();
-        });
-        // Kai
-        event.getGuild().retrieveMemberById(379018675795263503L).getJDA().openPrivateChannelById(379018675795263503L).queue(channel -> {
-            channel.sendMessage("Schön dass du bei Wichteln mitmachst! Du hast hiermit " + spieler.get("Kai") + " gezogen. Viel Spaß :P").queue();
-        });
-        // TODO More participants
+            log.info("Bot sent a private message to all users. Command initiated from " + event.getUser().getAsMention());
+            event.reply("Die DM mit allen ausgelosten Teilnehmern wurde verschickt. Lasset die Spiele beginnen <:DaveHeart:911979369579315301>").queue();
+        } else {
+            log.error(event.getUser().getAsMention() + " tried to use \" + cmd + \" with no permissions from type ROLE: WICHTELN");
+            event.reply("Das kannst du nicht tun.").setEphemeral(true).queue();
+        }
 
-        event.reply("Die DM mit allen ausgelosten Teilnehmern wurde verschickt. Lasset die Spiele beginnen <:DaveHeart:911979369579315301>").queue();
     }
 
     // Hard coded part of the bot, it is tailored to the participants this year.
